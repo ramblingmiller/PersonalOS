@@ -1,0 +1,401 @@
+# PersonalOS - Project Rules for AI Assistants
+
+## Project Overview
+
+**PersonalOS** is a desktop application combining AI-powered coding assistance (Cursor-style) with knowledge management (Obsidian-style). Built with Tauri, React, TypeScript, and Rust.
+
+**Core Philosophy**: "VSCode/Cursor WITH Obsidian capabilities" - NOT "Obsidian with AI bolted on"
+
+## Project Status
+
+- **Current Phase**: Phase 0 - Foundation (Documentation Complete ✅)
+- **Next Phase**: Phase 1 - Basic File System
+- **Timeline**: 12-week MVP development plan
+- **Documentation**: Complete suite in project root
+
+## Architecture Decisions (FINAL - Do Not Question)
+
+These decisions are **locked in**. Do not suggest alternatives:
+
+1. ✅ **Tauri** (not Electron, not Neutralino, not web app)
+2. ✅ **React + TypeScript** (not Vue, not Svelte, not vanilla)
+3. ✅ **Rust** backend (Tauri requirement)
+4. ✅ **CodeMirror 6** for editor (not Monaco, not Ace)
+5. ✅ **Tailwind CSS** for styling (not styled-components, not CSS modules)
+6. ✅ **SQLite** for indexing (not in-memory, not external DB)
+7. ✅ **Zustand** for state management (not Redux, not Context alone)
+8. ✅ **Local-first** (no cloud sync in MVP)
+9. ✅ **BYOK** for AI (user provides API keys)
+10. ✅ **Desktop only** (no web version, no mobile)
+
+**Rationale for each decision is in**: `01_Foundation/DecisionLog.md`
+
+## Documentation Structure
+
+**ALWAYS** consult documentation before making suggestions:
+
+```
+📁 01_Foundation/      - Vision, requirements, decisions
+📁 02_Architecture/    - Technical architecture, data models, security
+📁 03_Design/          - UI/UX specs, design system, user flows
+📁 04_Development/     - Setup, tech stack, standards, structure
+📁 05_Implementation/  - Roadmap, features, progress log
+📁 06_Testing/         - Test strategy and plans
+📁 07_Operations/      - Build, deployment, maintenance
+```
+
+**Key Documents**:
+- **ProjectCharter.md** - What we're building and why
+- **DecisionLog.md** - All major decisions (read this first!)
+- **TechnicalArchitecture.md** - System design
+- **CodingStandards.md** - How to write code
+- **DevelopmentRoadmap.md** - What to build when
+
+## Core Principles
+
+### 1. Documentation-First
+- All major decisions documented in DecisionLog.md
+- Update ImplementationLog.md daily during development
+- Documentation is not optional
+
+### 2. Incremental Development
+- Follow phases in DevelopmentRoadmap.md
+- Complete current phase before starting next
+- Don't skip testing
+
+### 3. Scope Control
+- Refer to ProjectCharter.md when suggesting features
+- Features not in current phase go to "Future" section
+- **Scope creep is enemy #1**
+
+### 4. Type Safety
+- TypeScript strict mode enabled
+- No `any` types without explicit justification
+- Rust clippy warnings are errors
+
+### 5. Security First
+- No hardcoded API keys
+- Validate all file paths (prevent traversal)
+- Sanitize all user input
+- Follow SecurityArchitecture.md
+
+## Coding Standards
+
+### TypeScript/React
+
+```typescript
+// ✅ DO: Explicit types, functional components
+interface Props {
+  title: string;
+  onSave: (content: string) => void;
+}
+
+export function Editor({ title, onSave }: Props) {
+  const [content, setContent] = useState<string>('');
+  // ...
+}
+
+// ❌ DON'T: any types, class components
+function Editor(props: any) { }  // BAD
+```
+
+**Conventions**:
+- Files: `PascalCase.tsx` for components, `camelCase.ts` for utilities
+- Components: PascalCase functions
+- Hooks: camelCase starting with `use`
+- No default exports (use named exports)
+
+### Rust
+
+```rust
+// ✅ DO: Result types, explicit error handling
+#[tauri::command]
+async fn read_file(path: String) -> Result<String, String> {
+    fs::read_to_string(&path)
+        .map_err(|e| format!("Failed to read file: {}", e))
+}
+
+// ❌ DON'T: unwrap(), panic!
+let content = fs::read_to_string(&path).unwrap();  // BAD
+```
+
+**Conventions**:
+- Functions: snake_case
+- Structs: PascalCase
+- No `unwrap()` or `expect()` in production code
+- All public items must have doc comments
+
+### Git Commits
+
+```
+feat(editor): add wikilink navigation
+fix(search): handle special characters
+docs: update setup guide
+chore: upgrade dependencies
+```
+
+Format: `type(scope): description`
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
+## When Suggesting Code Changes
+
+### 1. Check Documentation First
+- Is this feature in the current phase? (DevelopmentRoadmap.md)
+- Does this follow architecture? (TechnicalArchitecture.md)
+- Does this match design specs? (UIUXSpecification.md)
+
+### 2. Follow Patterns
+- Match existing code style
+- Use established patterns in codebase
+- Reference ProjectStructure.md for file placement
+
+### 3. Consider Security
+- Path validation for file operations
+- Input sanitization
+- No SQL injection risks
+- API keys never logged or exposed
+
+### 4. Update Documentation
+- Suggest updating ImplementationLog.md
+- Note if decision requires ADR entry
+- Flag if feature specs need updating
+
+## Phase-Specific Guidance
+
+### Current: Phase 0 (Documentation)
+- **Status**: Complete ✅
+- **Next**: Verify Tauri installation
+
+### Next: Phase 1 (File System - Week 3-4)
+**Focus**:
+- File tree component (React)
+- Directory listing (Rust command)
+- File reading (Rust command)
+- Basic layout (sidebar + editor area)
+
+**NOT in this phase**:
+- ❌ Editing files (Phase 2)
+- ❌ Search (Phase 3)
+- ❌ AI (Phase 4)
+
+### Phase 2 (Editor - Week 5-6)
+- CodeMirror integration
+- Save functionality
+- Markdown highlighting
+- Auto-save
+
+### Phase 3 (Navigation - Week 7-8)
+- Wikilink parsing
+- File/content search
+- Command palette
+
+### Phase 4 (AI - Week 9-10)
+- Chat interface
+- API integration
+- Context sharing
+
+## Common Pitfalls to Avoid
+
+### ❌ Don't Suggest
+1. "Let's use Electron instead" - NO, we chose Tauri
+2. "We should add cloud sync" - NO, local-first is core principle
+3. "Let's build a web version too" - NO, desktop only
+4. "Make it an Obsidian plugin" - NO, standalone app
+5. Features not in current phase - park them for later
+
+### ✅ Do Suggest
+1. How to implement current phase features
+2. Better ways to follow existing patterns
+3. Security improvements
+4. Performance optimizations
+5. Test cases for new code
+
+## File Operations Security
+
+**CRITICAL**: All file operations must validate paths
+
+```rust
+// ✅ Always validate
+fn read_file(vault_root: &Path, requested: &Path) -> Result<String> {
+    let canonical = requested.canonicalize()?;
+    
+    if !canonical.starts_with(vault_root) {
+        return Err("Path outside vault".into());
+    }
+    
+    fs::read_to_string(&canonical)
+}
+
+// ❌ Never trust user input
+fn read_file(path: &str) -> String {
+    fs::read_to_string(path).unwrap()  // DANGEROUS
+}
+```
+
+## Testing Requirements
+
+- Unit tests for utilities and pure functions
+- Integration tests for Tauri commands
+- Manual testing for UI components
+- See TestingStrategy.md for details
+
+**Before marking feature complete**:
+- [ ] Unit tests written and passing
+- [ ] Manually tested happy path
+- [ ] Error cases handled
+- [ ] Documentation updated
+
+## AI Assistant Best Practices
+
+### When User Asks for Help
+
+1. **Check Current Phase**
+   - Read DevelopmentRoadmap.md to see where we are
+   - Focus on current phase tasks only
+
+2. **Reference Docs**
+   - Cite relevant documentation
+   - Example: "According to TechnicalArchitecture.md, the file tree should..."
+
+3. **Provide Complete Solutions**
+   - Show both frontend and backend code
+   - Include error handling
+   - Follow coding standards
+   - Add tests if appropriate
+
+4. **Update Implementation Log**
+   - Suggest updating ImplementationLog.md with progress
+   - Note any decisions made
+
+### When User Asks About Architecture
+
+1. **Defer to Documentation**
+   - "According to DecisionLog.md (ADR-001), we chose Tauri because..."
+   - Don't contradict documented decisions
+
+2. **If Documentation is Unclear**
+   - Ask for clarification
+   - Suggest updating relevant docs
+   - Don't make assumptions
+
+### When User Wants New Features
+
+1. **Check Phase**
+   - Is this in current phase? Implement it.
+   - Is this in future phase? Acknowledge but defer.
+   - Not in roadmap? Suggest adding to Phase 6 section.
+
+2. **Scope Guard**
+   - Gently remind of project charter
+   - "That's a great idea! However, the charter focuses on X. Should we add this to the future features list?"
+
+## Quick Reference
+
+### Key Commands
+```bash
+# Development
+npm run tauri dev          # Run in dev mode
+npm run tauri build        # Build for production
+
+# Testing
+npm test                   # Frontend tests
+cd src-tauri && cargo test # Backend tests
+
+# Linting
+npm run lint               # ESLint
+cargo clippy              # Rust linting
+```
+
+### Key Files to Reference
+- **For architecture questions**: `02_Architecture/TechnicalArchitecture.md`
+- **For feature specs**: `05_Implementation/FeatureSpecifications.md`
+- **For design questions**: `03_Design/UIUXSpecification.md`
+- **For code style**: `04_Development/CodingStandards.md`
+- **For "why?" questions**: `01_Foundation/DecisionLog.md`
+
+### Current MVP Scope (Do NOT expand)
+- File system browser
+- Markdown editor with CodeMirror
+- Wikilink navigation
+- File/content search
+- Command palette
+- AI chat with context
+- Basic settings
+
+### Explicitly Out of Scope
+- Web version
+- Mobile apps
+- Cloud sync
+- Collaborative editing
+- Email integration
+- Calendar integration
+- Being feature-complete with Obsidian
+- Being feature-complete with VSCode
+
+## Error Messages
+
+Provide helpful, actionable error messages:
+
+```typescript
+// ✅ Good
+"Cannot open file: Permission denied. Check file permissions."
+
+// ❌ Bad
+"Error: EACCES"
+```
+
+## Performance Targets
+
+- App startup: < 3 seconds
+- File open: < 100ms
+- Save: < 50ms
+- Search (10K files): < 1 second
+
+If suggesting changes that might affect performance, note it.
+
+## Security Checklist
+
+Before suggesting file operations:
+- [ ] Path validated (no traversal)
+- [ ] Proper error handling
+- [ ] No sensitive data in logs
+- [ ] Input sanitized
+
+Before suggesting API calls:
+- [ ] HTTPS only
+- [ ] API key from secure storage
+- [ ] Error handling for network issues
+- [ ] Timeout configured
+
+## When in Doubt
+
+1. Check the documentation (it's comprehensive)
+2. Ask the user for clarification
+3. Suggest creating an ADR if it's a big decision
+4. Default to simplest solution that works
+5. Refer to ProjectCharter.md for scope questions
+
+## Remember
+
+- This is a **solo developer** project with **realistic timeline**
+- **Quality over features** - better to do less well than more poorly
+- **Use the tool while building it** - dogfooding starts Phase 5
+- **Documentation is not overhead** - it's how we avoid previous mistakes
+- **Scope creep killed previous attempts** - guard the scope fiercely
+
+## Success Metrics
+
+The project is successful when:
+- User actually prefers PersonalOS over Cursor + Obsidian
+- Can use it for full day of real work
+- No data loss
+- No environment setup issues
+- Actually use it daily after Phase 5
+
+---
+
+**Last Updated**: 2025-10-08
+**Rules Version**: 1.0
+**Project Phase**: 0 (Documentation Complete)
+
