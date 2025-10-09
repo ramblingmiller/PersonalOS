@@ -113,3 +113,26 @@ pub fn read_file(path: String) -> Result<String, String> {
         .map_err(|e| format!("Failed to read file: {}", e))
 }
 
+#[command]
+pub fn write_file(path: String, content: String) -> Result<(), String> {
+    let validated_path = validate_path(&path)?;
+    
+    // Check if path is a directory
+    if validated_path.is_dir() {
+        return Err("Cannot write to a directory".to_string());
+    }
+    
+    // Check if parent directory exists
+    if let Some(parent) = validated_path.parent() {
+        if !parent.exists() {
+            return Err("Parent directory does not exist".to_string());
+        }
+    }
+    
+    // Write file contents
+    fs::write(&validated_path, content)
+        .map_err(|e| format!("Failed to write file: {}", e))?;
+    
+    Ok(())
+}
+

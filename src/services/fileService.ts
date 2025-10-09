@@ -25,3 +25,11 @@ export async function readFile(path: string): Promise<string> {
   }
 }
 
+export async function writeFile(path: string, content: string): Promise<void> {
+  try {
+    await invoke<void>('write_file', { path, content });
+  } catch (error) {
+    throw new Error(`Failed to write file: ${error}`);
+  }
+}
+

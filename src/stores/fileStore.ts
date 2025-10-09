@@ -9,6 +9,8 @@ interface FileStore {
   fileContent: string | null;
   isLoading: boolean;
   error: string | null;
+  isFileDirty: boolean;
+  lastSavedContent: string | null;
 
   setCurrentDirectory: (path: string) => void;
   loadDirectory: (path: string) => Promise<void>;
@@ -16,6 +18,9 @@ interface FileStore {
   initializeWithHome: () => Promise<void>;
   navigateToParent: () => Promise<void>;
   clearError: () => void;
+  updateFileContent: (content: string) => void;
+  saveFile: () => Promise<void>;
+  setFileDirty: (dirty: boolean) => void;
 }
 
 export const useFileStore = create<FileStore>((set, get) => ({
@@ -25,6 +30,8 @@ export const useFileStore = create<FileStore>((set, get) => ({
   fileContent: null,
   isLoading: false,
   error: null,
+  isFileDirty: false,
+  lastSavedContent: null,
 
   setCurrentDirectory: (path: string) => {
     set({ currentDirectory: path });
@@ -51,7 +58,7 @@ export const useFileStore = create<FileStore>((set, get) => ({
     if (file.is_directory) {
       // Navigate into directory
       await get().loadDirectory(file.path);
-      set({ selectedFile: null, fileContent: null });
+      set({ selectedFile: null, fileContent: null, isFileDirty: false, lastSavedContent: null });
     } else {
       // Load file content
       set({ isLoading: true, error: null, selectedFile: file });
@@ -59,6 +66,8 @@ export const useFileStore = create<FileStore>((set, get) => ({
         const content = await fileService.readFile(file.path);
         set({
           fileContent: content,
+          lastSavedContent: content,
+          isFileDirty: false,
           isLoading: false,
         });
       } catch (error) {
@@ -66,6 +75,8 @@ export const useFileStore = create<FileStore>((set, get) => ({
           error: error instanceof Error ? error.message : 'Failed to read file',
           isLoading: false,
           fileContent: null,
+          lastSavedContent: null,
+          isFileDirty: false,
         });
       }
     }
@@ -100,6 +111,44 @@ export const useFileStore = create<FileStore>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  updateFileContent: (content: string) => {
+    const { lastSavedContent } = get();
+    const isDirty = content !== lastSavedContent;
+    set({ fileContent: content, isFileDirty: isDirty });
+  },
+
+  saveFile: async () => {
+    const { selectedFile, fileContent } = get();
+    if (!selectedFile || selectedFile.is_directory) {
+      set({ error: 'No file selected' });
+      return;
+    }
+
+    if (fileContent === null) {
+      set({ error: 'No content to save' });
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      await fileService.writeFile(selectedFile.path, fileContent);
+      set({
+        lastSavedContent: fileContent,
+        isFileDirty: false,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to save file',
+        isLoading: false,
+      });
+    }
+  },
+
+  setFileDirty: (dirty: boolean) => {
+    set({ isFileDirty: dirty });
   },
 }));
 
