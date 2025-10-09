@@ -1,8 +1,10 @@
 mod commands;
 mod models;
+mod services;
 mod utils;
 
 use commands::file::{get_home_directory, read_directory, read_file, write_file, create_file, create_directory};
+use commands::search::{init_index, index_directory, search_files, search_content, resolve_wikilink};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -14,7 +16,12 @@ pub fn run() {
             read_file,
             write_file,
             create_file,
-            create_directory
+            create_directory,
+            init_index,
+            index_directory,
+            search_files,
+            search_content,
+            resolve_wikilink
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

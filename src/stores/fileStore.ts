@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { FileEntry } from '../types/file';
 import * as fileService from '../services/fileService';
+import { useNavigationStore } from './navigationStore';
 
 interface FileStore {
   currentDirectory: string | null;
@@ -72,6 +73,9 @@ export const useFileStore = create<FileStore>((set, get) => ({
           isFileDirty: false,
           isLoading: false,
         });
+        
+        // Add to navigation history
+        useNavigationStore.getState().pushHistory(file.path);
       } catch (error) {
         set({
           error: error instanceof Error ? error.message : 'Failed to read file',
