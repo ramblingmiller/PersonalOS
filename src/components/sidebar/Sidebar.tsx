@@ -1,7 +1,7 @@
 import { useFileStore } from '../../stores/fileStore';
 import { FileTree } from './FileTree';
 import { ChevronUp, Home, FilePlus, FolderPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function Sidebar() {
   const { currentDirectory, navigateToParent, initializeWithHome, createNewFile, createNewFolder } = useFileStore();
@@ -9,6 +9,24 @@ export function Sidebar() {
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [newFolderName, setNewFolderName] = useState('');
+
+  // Listen for menu actions
+  useEffect(() => {
+    const handleMenuAction = (event: CustomEvent<string>) => {
+      const action = event.detail;
+      
+      if (action === 'new-file') {
+        setShowNewFileInput(true);
+        setShowNewFolderInput(false);
+      } else if (action === 'new-folder') {
+        setShowNewFolderInput(true);
+        setShowNewFileInput(false);
+      }
+    };
+
+    window.addEventListener('menuaction', handleMenuAction as EventListener);
+    return () => window.removeEventListener('menuaction', handleMenuAction as EventListener);
+  }, []);
 
   const handleCreateFile = async () => {
     if (!newFileName.trim()) return;
