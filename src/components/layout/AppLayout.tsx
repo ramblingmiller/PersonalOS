@@ -83,6 +83,13 @@ export function AppLayout() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Debug: Tailwind Dark Mode Test */}
+      <div className="hidden">
+        <div className="bg-white dark:bg-black text-black dark:text-white">
+          Tailwind Test
+        </div>
+      </div>
+      
       {/* Menu Bar */}
       <MenuBar />
 
