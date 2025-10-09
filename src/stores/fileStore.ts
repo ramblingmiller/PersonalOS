@@ -21,6 +21,8 @@ interface FileStore {
   updateFileContent: (content: string) => void;
   saveFile: () => Promise<void>;
   setFileDirty: (dirty: boolean) => void;
+  createNewFile: (name: string) => Promise<void>;
+  createNewFolder: (name: string) => Promise<void>;
 }
 
 export const useFileStore = create<FileStore>((set, get) => ({
@@ -149,6 +151,52 @@ export const useFileStore = create<FileStore>((set, get) => ({
 
   setFileDirty: (dirty: boolean) => {
     set({ isFileDirty: dirty });
+  },
+
+  createNewFile: async (name: string) => {
+    const { currentDirectory } = get();
+    if (!currentDirectory) {
+      set({ error: 'No directory selected' });
+      return;
+    }
+
+    const filePath = `${currentDirectory}/${name}`;
+    set({ isLoading: true, error: null });
+    
+    try {
+      await fileService.createFile(filePath);
+      // Reload directory to show new file
+      await get().loadDirectory(currentDirectory);
+      set({ isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to create file',
+        isLoading: false,
+      });
+    }
+  },
+
+  createNewFolder: async (name: string) => {
+    const { currentDirectory } = get();
+    if (!currentDirectory) {
+      set({ error: 'No directory selected' });
+      return;
+    }
+
+    const folderPath = `${currentDirectory}/${name}`;
+    set({ isLoading: true, error: null });
+    
+    try {
+      await fileService.createDirectory(folderPath);
+      // Reload directory to show new folder
+      await get().loadDirectory(currentDirectory);
+      set({ isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to create folder',
+        isLoading: false,
+      });
+    }
   },
 }));
 

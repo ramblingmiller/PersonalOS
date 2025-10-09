@@ -33,3 +33,19 @@ export async function writeFile(path: string, content: string): Promise<void> {
   }
 }
 
+export async function createFile(path: string): Promise<void> {
+  try {
+    await invoke<void>('create_file', { path });
+  } catch (error) {
+    throw new Error(`Failed to create file: ${error}`);
+  }
+}
+
+export async function createDirectory(path: string): Promise<void> {
+  try {
+    await invoke<void>('create_directory', { path });
+  } catch (error) {
+    throw new Error(`Failed to create directory: ${error}`);
+  }
+}
+

@@ -8,14 +8,16 @@ import { useFileStore } from '../../stores/fileStore';
 
 interface MarkdownEditorProps {
   initialContent: string;
+  filePath: string;
   onSave: () => void;
 }
 
-export function MarkdownEditor({ initialContent, onSave }: MarkdownEditorProps) {
+export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const updateFileContent = useFileStore((state) => state.updateFileContent);
 
+  // Only recreate editor when file changes, not on every content update
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -60,7 +62,7 @@ export function MarkdownEditor({ initialContent, onSave }: MarkdownEditorProps) 
       view.destroy();
       viewRef.current = null;
     };
-  }, [initialContent, onSave, updateFileContent]);
+  }, [filePath]); // Only recreate when file changes, not on content changes
 
   // Prevent default browser save dialog
   useEffect(() => {

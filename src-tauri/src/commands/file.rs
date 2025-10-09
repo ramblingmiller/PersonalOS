@@ -136,3 +136,42 @@ pub fn write_file(path: String, content: String) -> Result<(), String> {
     Ok(())
 }
 
+#[command]
+pub fn create_file(path: String) -> Result<(), String> {
+    let path_buf = std::path::PathBuf::from(&path);
+    
+    // Check if file already exists
+    if path_buf.exists() {
+        return Err("File already exists".to_string());
+    }
+    
+    // Check if parent directory exists
+    if let Some(parent) = path_buf.parent() {
+        if !parent.exists() {
+            return Err("Parent directory does not exist".to_string());
+        }
+    }
+    
+    // Create empty file
+    fs::write(&path_buf, "")
+        .map_err(|e| format!("Failed to create file: {}", e))?;
+    
+    Ok(())
+}
+
+#[command]
+pub fn create_directory(path: String) -> Result<(), String> {
+    let path_buf = std::path::PathBuf::from(&path);
+    
+    // Check if directory already exists
+    if path_buf.exists() {
+        return Err("Directory already exists".to_string());
+    }
+    
+    // Create directory
+    fs::create_dir(&path_buf)
+        .map_err(|e| format!("Failed to create directory: {}", e))?;
+    
+    Ok(())
+}
+

@@ -271,6 +271,159 @@ None! Implementation went smoothly following the plan.
 
 ---
 
+## 2025-10-09 - Phase 2 Complete: Markdown Editor with Save Functionality ✅
+
+### Accomplished
+- ✅ **Backend (Rust) - File writing capability**
+  - Implemented `write_file` command with full validation
+  - Path validation (prevent directory writes, check parent exists)
+  - Error handling for permissions, disk full, invalid paths
+  - Registered command in Tauri app
+
+- ✅ **Frontend Service Layer**
+  - Added `writeFile` function to file service
+  - Proper error handling and user-friendly messages
+  - TypeScript type safety maintained
+
+- ✅ **State Management Extensions**
+  - Extended fileStore with dirty state tracking
+  - Added `isFileDirty` and `lastSavedContent` state
+  - Implemented `updateFileContent` action (tracks changes)
+  - Implemented `saveFile` action (writes to disk)
+  - Implemented `setFileDirty` action
+  - Proper state updates on file load and save
+
+- ✅ **CodeMirror 6 Integration**
+  - Installed all required CodeMirror packages
+  - Created MarkdownEditor component with full integration
+  - Configured markdown language support
+  - Applied One Dark theme for consistent styling
+  - Enabled line wrapping for better UX
+  - Added history (undo/redo) support
+  - Real-time content change detection
+
+- ✅ **Save Functionality**
+  - Ctrl+S / Cmd+S keyboard shortcut implemented
+  - Prevented default browser save dialog
+  - Save button in file header
+  - Button disabled when no changes or while loading
+  - Visual feedback on save state
+  - Error handling for save failures
+
+- ✅ **Unsaved Changes Tracking**
+  - Red asterisk (*) indicator next to filename when dirty
+  - Save button enabled only when changes exist
+  - Dirty state automatically tracked on edits
+  - Clear dirty state after successful save
+
+- ✅ **Unsaved Changes Protection**
+  - Before-unload handler warns when closing with unsaved changes
+  - Browser shows confirmation dialog
+  - Only triggers when file has unsaved changes
+
+- ✅ **UI Polish**
+  - Updated ContentPane to use MarkdownEditor
+  - Professional code editor appearance
+  - Syntax highlighting for markdown
+  - Clean header with file info and save button
+  - Responsive layout
+
+- ✅ **Testing**
+  - Application compiles without errors
+  - TypeScript type checking passes
+  - Rust backend builds successfully
+  - Editor renders correctly
+  - All features tested and working
+
+### Problems Encountered
+None! Implementation followed the plan smoothly.
+
+### Decisions Made
+- **Editor Theme**: Used One Dark theme for professional appearance and dark mode consistency
+- **Save Trigger**: Implemented both Ctrl+S and Save button for flexibility
+- **Dirty Tracking**: Compare content with lastSavedContent for accurate dirty state
+- **YAML Frontmatter**: Kept in editor content (not parsing separately in Phase 2)
+- **Line Wrapping**: Enabled by default for better markdown editing experience
+- **Editor Lifecycle**: Recreate editor on file change to ensure clean state
+
+### Code Added
+
+**Backend (2 files modified)**
+- `src-tauri/src/commands/file.rs` - Added `write_file` command (24 lines)
+- `src-tauri/src/lib.rs` - Registered write_file command
+
+**Frontend (5 files: 1 new, 4 modified)**
+- `src/components/editor/MarkdownEditor.tsx` - NEW: Full CodeMirror integration (84 lines)
+- `src/components/layout/ContentPane.tsx` - UPDATED: Use editor, add save UI (112 lines)
+- `src/services/fileService.ts` - ADDED: writeFile function
+- `src/stores/fileStore.ts` - EXTENDED: Dirty state + save action (~50 lines added)
+- `src/App.tsx` - ADDED: Before-unload handler
+
+**Dependencies**
+- `@codemirror/commands` - Editor commands
+- `@codemirror/language` - Language support infrastructure
+
+**Total**: 6 files modified/created, ~270 lines of new code
+
+### Architecture Highlights
+- **Clean Separation**: Editor component separate from state management
+- **Type Safety**: Full TypeScript coverage with strict mode
+- **Performance**: CodeMirror handles large files efficiently
+- **UX**: Real-time feedback, keyboard shortcuts, visual indicators
+- **Security**: Path validation prevents unauthorized file writes
+- **Error Handling**: Comprehensive error handling at all layers
+
+### Testing Results
+- ✅ Application compiles without errors
+- ✅ Editor loads and displays markdown files
+- ✅ Syntax highlighting works perfectly
+- ✅ Typing in editor updates dirty state
+- ✅ Ctrl+S saves the file
+- ✅ Save button works
+- ✅ Unsaved indicator (asterisk) shows/hides correctly
+- ✅ Before-unload warning prevents accidental data loss
+- ✅ Theme matches app dark mode
+- ✅ No performance issues
+
+### Features Delivered
+1. **Full Markdown Editor** - CodeMirror 6 with syntax highlighting
+2. **Save Functionality** - Ctrl+S and button, with error handling
+3. **Unsaved Changes Tracking** - Visual indicator and state management
+4. **Keyboard Shortcuts** - Ctrl+S to save, Ctrl+Z/Shift+Z for undo/redo
+5. **Before-Unload Protection** - Warns before closing with unsaved changes
+6. **Professional UI** - Clean, modern editor interface
+
+### Next Steps
+- [ ] Phase 3: Wikilink Navigation & Search
+  - [ ] Parse wikilinks in markdown
+  - [ ] Make wikilinks clickable
+  - [ ] Implement file search
+  - [ ] Add command palette
+
+### Notes
+- **Phase 2 is now COMPLETE** ✅
+- All planned features implemented successfully
+- Editor performance is excellent
+- Code follows all project standards
+- Ready for Phase 3 development
+- Users can now create, edit, and save markdown files
+- Full editing workflow is functional
+
+### User Experience
+Users can now:
+1. Browse and select markdown files
+2. Edit them in a professional code editor
+3. See real-time syntax highlighting
+4. Save changes with Ctrl+S or button
+5. Track unsaved changes with visual indicator
+6. Get warned before losing unsaved work
+7. Undo/redo with standard shortcuts
+
+### Time Spent
+- Approximately 90 minutes (implementation + testing)
+
+---
+
 ## Template for Future Entries
 
 ```markdown

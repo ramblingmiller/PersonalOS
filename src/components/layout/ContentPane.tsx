@@ -98,6 +98,7 @@ export function ContentPane() {
       <div className="flex-1 overflow-hidden">
         <MarkdownEditor
           initialContent={fileContent}
+          filePath={selectedFile.path}
           onSave={handleSave}
         />
       </div>

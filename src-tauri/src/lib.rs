@@ -2,7 +2,7 @@ mod commands;
 mod models;
 mod utils;
 
-use commands::file::{get_home_directory, read_directory, read_file, write_file};
+use commands::file::{get_home_directory, read_directory, read_file, write_file, create_file, create_directory};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -12,7 +12,9 @@ pub fn run() {
             get_home_directory,
             read_directory,
             read_file,
-            write_file
+            write_file,
+            create_file,
+            create_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
