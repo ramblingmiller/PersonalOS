@@ -134,7 +134,10 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'file' && (
-          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
+          <div 
+            className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50"
+            style={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', opacity: 1 }}
+          >
             <MenuItem
               icon={<FilePlus className="w-4 h-4" />}
               label="New File"
@@ -178,7 +181,10 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'edit' && (
-          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
+          <div 
+            className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50"
+            style={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', opacity: 1 }}
+          >
             <MenuItem
               icon={<Undo2 className="w-4 h-4" />}
               label="Undo"
@@ -217,7 +223,10 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'view' && (
-          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
+          <div 
+            className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50"
+            style={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', opacity: 1 }}
+          >
             <MenuItem
               icon={<PanelLeft className="w-4 h-4" />}
               label="Toggle Sidebar"
@@ -246,7 +255,10 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'help' && (
-          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
+          <div 
+            className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50"
+            style={{ backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', opacity: 1 }}
+          >
             <MenuItem
               icon={<Info className="w-4 h-4" />}
               label="About PersonalOS"

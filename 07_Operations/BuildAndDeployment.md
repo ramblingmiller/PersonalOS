@@ -448,3 +448,5 @@ chmod +x personalos.AppImage
 |---------|------|---------|--------|
 | 1.0 | 2025-10-08 | Initial build/deployment docs | Kris |
 
+
+

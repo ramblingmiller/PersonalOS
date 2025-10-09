@@ -500,3 +500,5 @@ Platform-specific installer
 |---------|------|---------|--------|
 | 1.0 | 2025-10-08 | Initial architecture document | Kris |
 
+
+

@@ -1,10 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { useFileStore } from '../../stores/fileStore';
+
+// Custom light theme
+const lightTheme = EditorView.theme({
+  "&": {
+    color: "#1f2937",
+    backgroundColor: "#ffffff"
+  },
+  ".cm-content": {
+    caretColor: "#0e7490"
+  },
+  ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#0e7490" },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": { 
+    backgroundColor: "#bfdbfe" 
+  },
+  ".cm-activeLine": { backgroundColor: "#f3f4f6" },
+  ".cm-gutters": {
+    backgroundColor: "#f9fafb",
+    color: "#6b7280",
+    border: "none"
+  },
+  ".cm-activeLineGutter": {
+    backgroundColor: "#f3f4f6"
+  }
+}, { dark: false });
 
 interface MarkdownEditorProps {
   initialContent: string;
@@ -38,7 +62,7 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
   useEffect(() => {
     if (viewRef.current) {
       viewRef.current.dispatch({
-        effects: themeCompartment.current.reconfigure(isDarkMode ? oneDark : []),
+        effects: themeCompartment.current.reconfigure(isDarkMode ? oneDark : lightTheme),
       });
     }
   }, [isDarkMode]);
@@ -57,6 +81,7 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
     const startState = EditorState.create({
       doc: initialContent,
       extensions: [
+        lineNumbers(),
         history(),
         keymap.of([
           ...defaultKeymap,
@@ -64,7 +89,7 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
           { key: 'Mod-s', run: saveCommand },
         ]),
         markdown(),
-        themeCompartment.current.of(isDarkMode ? oneDark : []),
+        themeCompartment.current.of(isDarkMode ? oneDark : lightTheme),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             const newContent = update.state.doc.toString();
