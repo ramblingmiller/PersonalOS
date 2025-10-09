@@ -12,9 +12,10 @@
   "app": {
     "windows": [
       {
-        "title": "personal-os",
-        "width": 800,
-        "height": 600
+        "title": "PersonalOS",
+        "width": 1400,
+        "height": 900,
+        "devtools": true
       }
     ],
     "security": {

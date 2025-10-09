@@ -103,13 +103,16 @@ export function MenuBar() {
 
   const handleToggleDarkMode = () => {
     const newMode = !isDarkMode;
+    console.log('Toggling dark mode:', { from: isDarkMode, to: newMode });
     setIsDarkMode(newMode);
     if (newMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+      console.log('Dark mode enabled, classList:', document.documentElement.classList.toString());
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+      console.log('Light mode enabled, classList:', document.documentElement.classList.toString());
     }
     closeMenu();
   };

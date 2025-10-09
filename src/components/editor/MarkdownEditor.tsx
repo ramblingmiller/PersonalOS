@@ -60,9 +60,12 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
 
   // Update editor theme when dark mode changes
   useEffect(() => {
+    console.log('Editor theme update:', { isDarkMode, hasView: !!viewRef.current });
     if (viewRef.current) {
+      const newTheme = isDarkMode ? oneDark : lightTheme;
+      console.log('Reconfiguring editor theme to:', isDarkMode ? 'oneDark' : 'lightTheme');
       viewRef.current.dispatch({
-        effects: themeCompartment.current.reconfigure(isDarkMode ? oneDark : lightTheme),
+        effects: themeCompartment.current.reconfigure(newTheme),
       });
     }
   }, [isDarkMode]);
