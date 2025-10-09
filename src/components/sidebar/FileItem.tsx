@@ -19,11 +19,11 @@ export function FileItem({ file, onSelect, isSelected }: FileItemProps) {
       `}
     >
       {file.is_directory ? (
-        <Folder className="w-4 h-4 text-blue-500" />
+        <Folder className="w-4 h-4 text-blue-500 dark:text-blue-400" />
       ) : (
-        <File className="w-4 h-4 text-gray-500" />
+        <File className="w-4 h-4 text-gray-500 dark:text-gray-400" />
       )}
-      <span className="text-sm truncate flex-1">
+      <span className="text-sm truncate flex-1 text-gray-900 dark:text-gray-100">
         {file.name}
       </span>
     </button>

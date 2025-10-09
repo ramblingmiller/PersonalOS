@@ -124,7 +124,7 @@ export function MenuBar() {
   };
 
   return (
-    <div ref={menuRef} className="flex items-center h-8 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 text-sm">
+    <div ref={menuRef} className="flex items-center h-8 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 text-sm text-gray-900 dark:text-gray-100">
       {/* File Menu */}
       <div className="relative">
         <button
