@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EditorView, keymap } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -15,7 +15,33 @@ interface MarkdownEditorProps {
 export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const themeCompartment = useRef(new Compartment());
   const updateFileContent = useFileStore((state) => state.updateFileContent);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+
+  // Watch for dark mode changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Update editor theme when dark mode changes
+  useEffect(() => {
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: themeCompartment.current.reconfigure(isDarkMode ? oneDark : []),
+      });
+    }
+  }, [isDarkMode]);
 
   // Only recreate editor when file changes, not on every content update
   useEffect(() => {
@@ -38,7 +64,7 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
           { key: 'Mod-s', run: saveCommand },
         ]),
         markdown(),
-        oneDark,
+        themeCompartment.current.of(isDarkMode ? oneDark : []),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             const newContent = update.state.doc.toString();

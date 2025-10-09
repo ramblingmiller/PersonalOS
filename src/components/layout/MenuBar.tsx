@@ -42,10 +42,23 @@ export function MenuBar() {
     }
   }, [activeMenu]);
 
-  // Detect initial dark mode
+  // Detect and sync dark mode state
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
     setIsDarkMode(isDark);
+
+    // Watch for dark mode changes from other sources
+    const observer = new MutationObserver(() => {
+      const currentDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(currentDark);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const toggleMenu = (menu: MenuId) => {
@@ -93,8 +106,10 @@ export function MenuBar() {
     setIsDarkMode(newMode);
     if (newMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
     closeMenu();
   };
@@ -119,7 +134,7 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'file' && (
-          <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 z-50">
+          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
             <MenuItem
               icon={<FilePlus className="w-4 h-4" />}
               label="New File"
@@ -163,7 +178,7 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'edit' && (
-          <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 z-50">
+          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
             <MenuItem
               icon={<Undo2 className="w-4 h-4" />}
               label="Undo"
@@ -202,7 +217,7 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'view' && (
-          <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 z-50">
+          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
             <MenuItem
               icon={<PanelLeft className="w-4 h-4" />}
               label="Toggle Sidebar"
@@ -231,7 +246,7 @@ export function MenuBar() {
         </button>
         
         {activeMenu === 'help' && (
-          <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 z-50">
+          <div className="absolute top-full left-0 mt-1 w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl py-1 z-50 backdrop-blur-sm">
             <MenuItem
               icon={<Info className="w-4 h-4" />}
               label="About PersonalOS"

@@ -9,6 +9,19 @@ export function AppLayout() {
   const [showAbout, setShowAbout] = useState(false);
   const { selectedFile, isFileDirty, saveFile } = useFileStore();
 
+  // Initialize dark mode from localStorage or system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   // Listen for menu actions
   useEffect(() => {
     const handleMenuAction = (event: CustomEvent<string>) => {
