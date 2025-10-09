@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { useFileStore } from './stores/fileStore';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWebview } from '@tauri-apps/api/webview';
 
 function App() {
   const initializeWithHome = useFileStore((state) => state.initializeWithHome);
@@ -17,15 +17,11 @@ function App() {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key === 'F12') {
         e.preventDefault();
-        const window = getCurrentWindow();
         try {
-          // Toggle devtools
-          const isDevToolsOpen = await window.isDevToolsOpen();
-          if (isDevToolsOpen) {
-            await window.closeDevTools();
-          } else {
-            await window.openDevTools();
-          }
+          const webview = getCurrentWebview();
+          // Use internal toggle devtools
+          await webview.internalToggleDevtools();
+          console.log('Devtools toggled');
         } catch (error) {
           console.error('Failed to toggle devtools:', error);
         }

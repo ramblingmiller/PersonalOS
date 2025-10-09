@@ -6,8 +6,6 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "core:window:allow-open-devtools",
-    "core:window:allow-close-devtools",
-    "core:window:allow-is-devtools-open"
+    "core:webview:allow-internal-toggle-devtools"
   ]
 }
