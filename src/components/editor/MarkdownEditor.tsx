@@ -4,6 +4,7 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { search, highlightSelectionMatches } from '@codemirror/search';
 import { useFileStore } from '../../stores/fileStore';
 
 // Custom light theme
@@ -86,6 +87,10 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
       extensions: [
         lineNumbers(),
         history(),
+        search({
+          top: true, // Show search panel at top
+        }),
+        highlightSelectionMatches(),
         keymap.of([
           ...defaultKeymap,
           ...historyKeymap,
