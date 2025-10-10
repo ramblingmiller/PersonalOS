@@ -49,6 +49,17 @@ export const useFileStore = create<FileStore>((set, get) => ({
         files,
         isLoading: false,
       });
+      
+      // Trigger indexing for this directory in background
+      import('../services/searchService').then((searchService) => {
+        searchService.indexDirectory(path)
+          .then((count) => {
+            console.log(`Indexed ${count} files in ${path}`);
+          })
+          .catch((error) => {
+            console.error('Background indexing failed:', error);
+          });
+      });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to load directory',
