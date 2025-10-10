@@ -8,12 +8,13 @@ function App() {
   const isFileDirty = useFileStore((state) => state.isFileDirty);
 
   useEffect(() => {
-    // Initialize the file system first
-    initializeWithHome();
-    
-    // Initialize search index in background (non-blocking)
-    setTimeout(async () => {
+    // Initialize the file system and search index sequentially
+    (async () => {
       try {
+        // First, initialize file system and wait for it to complete
+        await initializeWithHome();
+        
+        // Now that file system is ready, initialize search index
         const dbPath = await searchService.initIndex();
         console.log('Search index initialized at:', dbPath);
         
@@ -31,9 +32,9 @@ function App() {
             });
         }
       } catch (error) {
-        console.error('Failed to initialize search index:', error);
+        console.error('Failed to initialize:', error);
       }
-    }, 2000); // Wait 2 seconds for UI to be responsive first
+    })();
   }, [initializeWithHome]);
 
   // Warn before closing with unsaved changes
