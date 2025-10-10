@@ -8,45 +8,45 @@ function App() {
   const isFileDirty = useFileStore((state) => state.isFileDirty);
 
   useEffect(() => {
-    // Initialize file system (non-blocking)
-    initializeWithHome();
-    
-    let timeoutId: NodeJS.Timeout | null = null;
     let isMounted = true;
     
-    // Initialize search database
-    searchService.initIndex()
-      .then((dbPath) => {
+    // Proper async initialization
+    (async () => {
+      try {
+        // Initialize search database first
+        const dbPath = await searchService.initIndex();
         if (!isMounted) return;
         console.log('Search database ready at:', dbPath);
         
-        // After UI is loaded (3 seconds), start indexing in background
-        timeoutId = setTimeout(() => {
-          if (!isMounted) return;
-          const currentDir = useFileStore.getState().currentDirectory;
-          if (currentDir) {
-            console.log('Starting automatic background indexing...');
-            searchService.indexDirectory(currentDir)
-              .then((count) => {
-                if (!isMounted) return;
-                console.log(`✅ Indexed ${count} markdown files automatically`);
-              })
-              .catch((error) => {
-                console.error('Background indexing failed:', error);
-              });
-          }
-        }, 3000);
-      })
-      .catch((error) => {
-        console.error('Failed to initialize search database:', error);
-      });
+        // Initialize file system and wait for completion
+        await initializeWithHome();
+        if (!isMounted) return;
+        
+        // File system is now ready, get current directory
+        const currentDir = useFileStore.getState().currentDirectory;
+        if (!currentDir) {
+          console.warn('No current directory set after initialization');
+          return;
+        }
+        
+        // Start indexing in background (non-blocking)
+        console.log('Starting automatic background indexing...');
+        searchService.indexDirectory(currentDir)
+          .then((count) => {
+            if (!isMounted) return;
+            console.log(`✅ Indexed ${count} markdown files automatically`);
+          })
+          .catch((error) => {
+            console.error('Background indexing failed:', error);
+          });
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+      }
+    })();
     
-    // Cleanup function to prevent memory leaks and race conditions
+    // Cleanup function to prevent race conditions
     return () => {
       isMounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     };
   }, [initializeWithHome]);
 
