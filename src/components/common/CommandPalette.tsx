@@ -107,13 +107,22 @@ export function CommandPalette({ isOpen, mode, onClose }: CommandPaletteProps) {
     }
 
     if (!query.trim()) {
-      setFileResults([]);
+      // Show current directory files when no query
+      const currentFiles = files.filter((f) => !f.is_directory).slice(0, 10);
+      const matches: FileMatch[] = currentFiles.map((f) => ({
+        path: f.path,
+        title: f.name,
+        score: 0,
+      }));
+      setFileResults(matches);
       return;
     }
 
     const searchAsync = async () => {
       try {
+        console.log('Searching files for:', query);
         const results = await searchFiles(query);
+        console.log('Search results:', results);
         setFileResults(results);
       } catch (error) {
         console.error('Search failed:', error);
@@ -123,7 +132,7 @@ export function CommandPalette({ isOpen, mode, onClose }: CommandPaletteProps) {
 
     const timer = setTimeout(searchAsync, 200); // Debounce
     return () => clearTimeout(timer);
-  }, [query, mode, isOpen]);
+  }, [query, mode, isOpen, files]);
 
   // Filter commands when in command mode
   const filteredCommands = mode === 'commands' && query

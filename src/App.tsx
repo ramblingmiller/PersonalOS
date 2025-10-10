@@ -8,30 +8,36 @@ function App() {
   const isFileDirty = useFileStore((state) => state.isFileDirty);
 
   useEffect(() => {
-    // Initialize the file system with the home directory on mount
-    initializeWithHome();
-
-    // Initialize search index
-    const initSearch = async () => {
+    // Initialize the file system and search index
+    const init = async () => {
       try {
-        await searchService.initIndex();
-        console.log('Search index initialized');
+        // First initialize index database
+        const dbPath = await searchService.initIndex();
+        console.log('Search index initialized at:', dbPath);
         
-        // Index home directory in background
-        const homeDir = await useFileStore.getState().currentDirectory;
-        if (homeDir) {
-          searchService.indexDirectory(homeDir).then((count) => {
-            console.log(`Indexed ${count} files`);
-          }).catch((error) => {
-            console.error('Failed to index directory:', error);
-          });
-        }
+        // Then initialize file system
+        await initializeWithHome();
+        
+        // Wait a bit for the state to update, then index
+        setTimeout(async () => {
+          const currentDir = useFileStore.getState().currentDirectory;
+          console.log('Indexing directory:', currentDir);
+          
+          if (currentDir) {
+            try {
+              const count = await searchService.indexDirectory(currentDir);
+              console.log(`Indexed ${count} markdown files`);
+            } catch (error) {
+              console.error('Failed to index directory:', error);
+            }
+          }
+        }, 1000);
       } catch (error) {
-        console.error('Failed to initialize search index:', error);
+        console.error('Failed to initialize:', error);
       }
     };
 
-    initSearch();
+    init();
   }, [initializeWithHome]);
 
   // Warn before closing with unsaved changes
