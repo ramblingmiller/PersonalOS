@@ -11,18 +11,24 @@ function App() {
     // Initialize file system (non-blocking)
     initializeWithHome();
     
+    let timeoutId: NodeJS.Timeout | null = null;
+    let isMounted = true;
+    
     // Initialize search database
     searchService.initIndex()
       .then((dbPath) => {
+        if (!isMounted) return;
         console.log('Search database ready at:', dbPath);
         
         // After UI is loaded (3 seconds), start indexing in background
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
+          if (!isMounted) return;
           const currentDir = useFileStore.getState().currentDirectory;
           if (currentDir) {
             console.log('Starting automatic background indexing...');
             searchService.indexDirectory(currentDir)
               .then((count) => {
+                if (!isMounted) return;
                 console.log(`✅ Indexed ${count} markdown files automatically`);
               })
               .catch((error) => {
@@ -34,6 +40,14 @@ function App() {
       .catch((error) => {
         console.error('Failed to initialize search database:', error);
       });
+    
+    // Cleanup function to prevent memory leaks and race conditions
+    return () => {
+      isMounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [initializeWithHome]);
 
   // Warn before closing with unsaved changes
