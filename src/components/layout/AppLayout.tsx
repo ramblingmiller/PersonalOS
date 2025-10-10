@@ -3,6 +3,7 @@ import { Sidebar } from '../sidebar/Sidebar';
 import { ContentPane } from './ContentPane';
 import { MenuBar } from './MenuBar';
 import { CommandPalette } from '../common/CommandPalette';
+import { SearchPanel } from '../search/SearchPanel';
 import { useFileStore } from '../../stores/fileStore';
 import { useNavigationStore } from '../../stores/navigationStore';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -12,6 +13,7 @@ export function AppLayout() {
   const [showAbout, setShowAbout] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [commandPaletteMode, setCommandPaletteMode] = useState<'files' | 'commands'>('files');
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const { selectedFile, isFileDirty, saveFile } = useFileStore();
   const { canGoBack, canGoForward, goBack, goForward } = useNavigationStore();
 
@@ -60,6 +62,13 @@ export function AppLayout() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+F for search panel
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        setSearchPanelOpen(true);
+        return;
+      }
+
       // Ctrl+P or Ctrl+Shift+P for command palette
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
         e.preventDefault();
@@ -182,6 +191,12 @@ export function AppLayout() {
         isOpen={commandPaletteOpen}
         mode={commandPaletteMode}
         onClose={() => setCommandPaletteOpen(false)}
+      />
+
+      {/* Search Panel */}
+      <SearchPanel
+        isOpen={searchPanelOpen}
+        onClose={() => setSearchPanelOpen(false)}
       />
 
       {/* About Modal */}
