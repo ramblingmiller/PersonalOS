@@ -6,6 +6,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { search, highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import { useFileStore } from '../../stores/fileStore';
+import { wikilinkPlugin, wikilinkTheme, getWikilinkAtPos } from './wikilinkExtension';
+import { resolveWikilink } from '../../services/searchService';
 
 // Custom light theme
 const lightTheme = EditorView.theme({
@@ -42,6 +44,9 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
   const updateFileContent = useFileStore((state) => state.updateFileContent);
+  const selectFile = useFileStore((state) => state.selectFile);
+  const files = useFileStore((state) => state.files);
+  const currentDirectory = useFileStore((state) => state.currentDirectory);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
 
   // Watch for dark mode changes
@@ -81,6 +86,41 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
       return true;
     };
 
+    // Handle wikilink clicks
+    const handleWikilinkClick = async (event: MouseEvent, view: EditorView) => {
+      // Only handle Ctrl+Click or Cmd+Click
+      if (!event.ctrlKey && !event.metaKey) return;
+
+      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+      if (!pos) return;
+
+      const wikilink = getWikilinkAtPos(view, pos);
+      if (!wikilink) return;
+
+      event.preventDefault();
+      console.log('Navigating to wikilink:', wikilink);
+
+      try {
+        // Try to resolve the wikilink
+        const targetPath = await resolveWikilink(wikilink, currentDirectory || '');
+        
+        if (targetPath) {
+          // Find the file in the current files list
+          const targetFile = files.find((f) => f.path === targetPath);
+          if (targetFile) {
+            selectFile(targetFile);
+          } else {
+            console.warn('File found but not in current directory:', targetPath);
+          }
+        } else {
+          console.warn('Wikilink target not found:', wikilink);
+          // Could show a "create new file?" dialog here
+        }
+      } catch (error) {
+        console.error('Failed to resolve wikilink:', error);
+      }
+    };
+
     // Setup editor state
     const startState = EditorState.create({
       doc: initialContent,
@@ -91,6 +131,8 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
           top: true, // Show search panel at top
         }),
         highlightSelectionMatches(),
+        wikilinkPlugin,
+        wikilinkTheme,
         keymap.of([
           ...searchKeymap,
           ...defaultKeymap,
@@ -106,6 +148,12 @@ export function MarkdownEditor({ initialContent, filePath, onSave }: MarkdownEdi
           }
         }),
         EditorView.lineWrapping,
+        EditorView.domEventHandlers({
+          click: (event, view) => {
+            handleWikilinkClick(event, view);
+            return false;
+          },
+        }),
       ],
     });
 
