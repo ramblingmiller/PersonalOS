@@ -8,33 +8,17 @@ function App() {
   const isFileDirty = useFileStore((state) => state.isFileDirty);
 
   useEffect(() => {
-    // Initialize the file system and search index sequentially
-    (async () => {
-      try {
-        // First, initialize file system and wait for it to complete
-        await initializeWithHome();
-        
-        // Now that file system is ready, initialize search index
-        const dbPath = await searchService.initIndex();
-        console.log('Search index initialized at:', dbPath);
-        
-        const currentDir = useFileStore.getState().currentDirectory;
-        console.log('Current directory for indexing:', currentDir);
-        
-        if (currentDir) {
-          // Index in background without blocking UI
-          searchService.indexDirectory(currentDir)
-            .then((count) => {
-              console.log(`Indexed ${count} markdown files`);
-            })
-            .catch((error) => {
-              console.error('Failed to index directory:', error);
-            });
-        }
-      } catch (error) {
-        console.error('Failed to initialize:', error);
-      }
-    })();
+    // Initialize file system (non-blocking)
+    initializeWithHome();
+    
+    // Initialize search index database only (no indexing yet)
+    searchService.initIndex()
+      .then((dbPath) => {
+        console.log('Search database ready at:', dbPath);
+      })
+      .catch((error) => {
+        console.error('Failed to initialize search database:', error);
+      });
   }, [initializeWithHome]);
 
   // Warn before closing with unsaved changes
