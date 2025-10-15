@@ -300,3 +300,5 @@ src-tauri/target/release/bundle/
 
 
 
+
+

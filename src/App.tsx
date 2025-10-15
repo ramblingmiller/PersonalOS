@@ -8,46 +8,17 @@ function App() {
   const isFileDirty = useFileStore((state) => state.isFileDirty);
 
   useEffect(() => {
-    let isMounted = true;
+    // Initialize file system only
+    initializeWithHome();
     
-    // Proper async initialization
-    (async () => {
-      try {
-        // Initialize search database first
-        const dbPath = await searchService.initIndex();
-        if (!isMounted) return;
-        console.log('Search database ready at:', dbPath);
-        
-        // Initialize file system and wait for completion
-        await initializeWithHome();
-        if (!isMounted) return;
-        
-        // File system is now ready, get current directory
-        const currentDir = useFileStore.getState().currentDirectory;
-        if (!currentDir) {
-          console.warn('No current directory set after initialization');
-          return;
-        }
-        
-        // Start indexing in background (non-blocking)
-        console.log('Starting automatic background indexing...');
-        searchService.indexDirectory(currentDir)
-          .then((count) => {
-            if (!isMounted) return;
-            console.log(`✅ Indexed ${count} markdown files automatically`);
-          })
-          .catch((error) => {
-            console.error('Background indexing failed:', error);
-          });
-      } catch (error) {
-        console.error('Failed to initialize:', error);
-      }
-    })();
-    
-    // Cleanup function to prevent race conditions
-    return () => {
-      isMounted = false;
-    };
+    // Initialize empty search database (no indexing yet)
+    searchService.initIndex()
+      .then((dbPath) => {
+        console.log('Search database initialized at:', dbPath);
+      })
+      .catch((error) => {
+        console.error('Failed to initialize search database:', error);
+      });
   }, [initializeWithHome]);
 
   // Warn before closing with unsaved changes

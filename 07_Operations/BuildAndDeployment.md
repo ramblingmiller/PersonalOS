@@ -450,3 +450,5 @@ chmod +x personalos.AppImage
 
 
 
+
+
