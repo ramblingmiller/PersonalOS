@@ -35,9 +35,11 @@ impl BackgroundIndexer {
             }
         }
 
-        // Check if we've hit the thread limit
-        let current_threads = active_threads.load(Ordering::SeqCst);
-        if current_threads >= MAX_CONCURRENT_INDEXING {
+        // Atomically check and increment the thread counter (prevents TOCTOU race)
+        let prev_threads = active_threads.fetch_add(1, Ordering::SeqCst);
+        if prev_threads >= MAX_CONCURRENT_INDEXING {
+            // Undo the increment since we're not spawning
+            active_threads.fetch_sub(1, Ordering::SeqCst);
             println!(
                 "Indexing deferred for {} (max {} concurrent operations reached)",
                 directory, MAX_CONCURRENT_INDEXING
@@ -45,9 +47,6 @@ impl BackgroundIndexer {
             // In production, this could be queued instead of silently dropped
             return;
         }
-
-        // Increment active thread counter
-        active_threads.fetch_add(1, Ordering::SeqCst);
 
         // Spawn background thread with resource limiting
         thread::spawn(move || {
