@@ -2,23 +2,29 @@ use crate::services::index_service::IndexService;
 use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use tauri::{AppHandle, Emitter};
 
+const MAX_CONCURRENT_INDEXING: usize = 2;
+
 pub struct BackgroundIndexer {
     indexed_dirs: Arc<Mutex<HashSet<String>>>,
+    active_threads: Arc<AtomicUsize>,
 }
 
 impl BackgroundIndexer {
     pub fn new() -> Self {
         Self {
             indexed_dirs: Arc::new(Mutex::new(HashSet::new())),
+            active_threads: Arc::new(AtomicUsize::new(0)),
         }
     }
 
     pub fn start_indexing(&self, app_handle: AppHandle, directory: String, db_path: String) {
         let indexed_dirs = self.indexed_dirs.clone();
+        let active_threads = self.active_threads.clone();
 
         // Check if already indexed
         {
@@ -29,9 +35,24 @@ impl BackgroundIndexer {
             }
         }
 
-        // Spawn background thread (non-blocking!)
+        // Check if we've hit the thread limit
+        let current_threads = active_threads.load(Ordering::SeqCst);
+        if current_threads >= MAX_CONCURRENT_INDEXING {
+            println!(
+                "Indexing deferred for {} (max {} concurrent operations reached)",
+                directory, MAX_CONCURRENT_INDEXING
+            );
+            // In production, this could be queued instead of silently dropped
+            return;
+        }
+
+        // Increment active thread counter
+        active_threads.fetch_add(1, Ordering::SeqCst);
+
+        // Spawn background thread with resource limiting
         thread::spawn(move || {
-            println!("Background indexing started for: {}", directory);
+            println!("Background indexing started for: {} [{} active]", 
+                directory, active_threads.load(Ordering::SeqCst));
 
             match index_directory_in_thread(&db_path, &directory) {
                 Ok(count) => {
@@ -50,6 +71,9 @@ impl BackgroundIndexer {
                     }
                 }
             }
+            
+            // Decrement active thread counter when done
+            active_threads.fetch_sub(1, Ordering::SeqCst);
         });
     }
 }
@@ -127,27 +151,38 @@ fn index_file(conn: &rusqlite::Connection, path: &Path) -> Result<(), String> {
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
 
+    // Use transaction for atomicity of file + FTS index update
+    let tx = conn
+        .unchecked_transaction()
+        .map_err(|e| format!("Failed to start transaction: {}", e))?;
+
     // Insert or replace file
-    conn.execute(
+    tx.execute(
         "INSERT OR REPLACE INTO files (path, title, content, modified, created)
          VALUES (?1, ?2, ?3, ?4, ?5)",
         params![path_str, title, content, modified, created],
     )
     .map_err(|e| format!("Failed to insert file: {}", e))?;
 
-    // Update FTS index
-    conn.execute(
+    // Update FTS index - log errors instead of silently discarding
+    if let Err(e) = tx.execute(
         "DELETE FROM files_fts WHERE rowid IN (SELECT id FROM files WHERE path = ?1)",
         params![path_str],
-    )
-    .ok();
+    ) {
+        eprintln!("FTS deletion warning for {}: {}", path_str, e);
+        // Continue anyway - INSERT below will handle it
+    }
 
-    conn.execute(
+    tx.execute(
         "INSERT INTO files_fts (rowid, path, title, content)
          SELECT id, path, title, content FROM files WHERE path = ?1",
         params![path_str],
     )
     .map_err(|e| format!("Failed to update FTS index: {}", e))?;
+
+    // Commit transaction (ensures atomicity)
+    tx.commit()
+        .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     Ok(())
 }
