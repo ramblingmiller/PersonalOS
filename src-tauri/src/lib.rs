@@ -4,7 +4,7 @@ mod services;
 mod utils;
 
 use commands::file::{get_home_directory, read_directory, read_file, write_file, create_file, create_directory};
-use commands::search::{init_index, index_directory, search_files, search_content, resolve_wikilink};
+use commands::search::{init_index, notify_directory_opened, search_files, search_content, resolve_wikilink};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -18,7 +18,7 @@ pub fn run() {
             create_file,
             create_directory,
             init_index,
-            index_directory,
+            notify_directory_opened,
             search_files,
             search_content,
             resolve_wikilink

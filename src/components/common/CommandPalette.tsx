@@ -10,11 +10,9 @@ import {
   Command
 } from 'lucide-react';
 import { useFileStore } from '../../stores/fileStore';
-import { searchFiles, indexDirectory } from '../../services/searchService';
+import { searchFiles } from '../../services/searchService';
 import { FileMatch } from '../../types/search';
 import { fuzzyMatch } from '../../utils/fuzzy';
-
-let indexingStarted = false;
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -100,21 +98,6 @@ export function CommandPalette({ isOpen, mode, onClose }: CommandPaletteProps) {
       keywords: ['theme', 'dark', 'light', 'mode'],
     },
   ];
-
-  // Trigger indexing on first open
-  useEffect(() => {
-    if (isOpen && mode === 'files' && !indexingStarted && currentDirectory) {
-      indexingStarted = true;
-      console.log('Starting background indexing...');
-      indexDirectory(currentDirectory)
-        .then((count) => {
-          console.log(`Indexed ${count} markdown files`);
-        })
-        .catch((error) => {
-          console.error('Indexing failed:', error);
-        });
-    }
-  }, [isOpen, mode, currentDirectory]);
 
   // Search for files when in file mode
   useEffect(() => {

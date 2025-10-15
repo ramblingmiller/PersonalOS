@@ -9,11 +9,11 @@ export async function initIndex(): Promise<string> {
   }
 }
 
-export async function indexDirectory(directory: string): Promise<number> {
+export async function notifyDirectoryOpened(directory: string): Promise<void> {
   try {
-    return await invoke<number>('index_directory', { directory });
+    await invoke<void>('notify_directory_opened', { directory });
   } catch (error) {
-    throw new Error(`Failed to index directory: ${error}`);
+    throw new Error(`Failed to notify directory opened: ${error}`);
   }
 }
 

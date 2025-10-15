@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { FileEntry } from '../types/file';
 import * as fileService from '../services/fileService';
+import * as searchService from '../services/searchService';
 import { useNavigationStore } from './navigationStore';
 
 interface FileStore {
@@ -48,6 +49,11 @@ export const useFileStore = create<FileStore>((set, get) => ({
         currentDirectory: path,
         files,
         isLoading: false,
+      });
+      
+      // Notify backend to start background indexing (fire-and-forget)
+      searchService.notifyDirectoryOpened(path).catch((error) => {
+        console.error('Failed to notify directory opened:', error);
       });
     } catch (error) {
       set({

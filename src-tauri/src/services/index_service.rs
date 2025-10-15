@@ -13,6 +13,10 @@ impl IndexService {
     pub fn initialize(&self) -> Result<()> {
         let conn = Connection::open(&self.db_path)?;
 
+        // Enable WAL mode for better concurrency (use pragma for setting)
+        conn.pragma_update(None, "journal_mode", "WAL")?;
+        conn.pragma_update(None, "synchronous", "NORMAL")?;
+
         // Create files table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS files (
@@ -40,7 +44,9 @@ impl IndexService {
     }
 
     pub fn get_connection(&self) -> Result<Connection> {
-        Connection::open(&self.db_path)
+        let conn = Connection::open(&self.db_path)?;
+        // WAL mode is already set at database level, no need to set per connection
+        Ok(conn)
     }
 }
 

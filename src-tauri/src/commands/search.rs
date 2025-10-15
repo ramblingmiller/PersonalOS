@@ -1,9 +1,13 @@
 use crate::models::search::{ContentMatch, FileMatch};
 use crate::services::index_service::IndexService;
+use crate::services::background_indexer::BackgroundIndexer;
 use rusqlite::{params, Connection};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 use tauri::{command, AppHandle, Manager};
+
+static BACKGROUND_INDEXER: OnceLock<BackgroundIndexer> = OnceLock::new();
 
 // Get database path in app data directory
 fn get_db_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -31,10 +35,30 @@ pub fn init_index(app: AppHandle) -> Result<String, String> {
         .initialize()
         .map_err(|e| format!("Failed to initialize database: {}", e))?;
 
+    // Initialize background indexer
+    BACKGROUND_INDEXER.get_or_init(|| BackgroundIndexer::new());
+
     db_path
         .to_str()
         .ok_or_else(|| "Invalid database path".to_string())
         .map(|s| s.to_string())
+}
+
+#[command]
+pub fn notify_directory_opened(app: AppHandle, directory: String) -> Result<(), String> {
+    let db_path = get_db_path(&app)?;
+    let db_path_str = db_path
+        .to_str()
+        .ok_or_else(|| "Invalid database path".to_string())?
+        .to_string();
+
+    // Get or initialize the background indexer
+    let indexer = BACKGROUND_INDEXER.get_or_init(|| BackgroundIndexer::new());
+
+    // Trigger background indexing (returns immediately!)
+    indexer.start_indexing(app, directory, db_path_str);
+
+    Ok(())
 }
 
 #[command]
